@@ -1,6 +1,11 @@
+import AddExpenses from '@/components/AddExpenses';
 import { Button } from '@/components/ui/button';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 const Hero = () => {
+  const [showAddExpense, setShowAddExpense] = useState(false);
+
   const Expenses = [
     {
       date: 'January 31, 2024',
@@ -74,13 +79,17 @@ const Hero = () => {
         <Button className="h-[3rem] w-[15rem] border-2 border-green-500 bg-transparent text-green-500">
           Analytics
         </Button>
-        <Button className="h-[6rem] w-[6rem] rounded-full border-2 border-green-500 bg-transparent text-[2.5rem] font-bold text-green-500">
+        <Button
+          onClick={() => setShowAddExpense(true)}
+          className="h-[7rem] w-[7rem] rounded-full border-2 border-green-500 bg-transparent p-0 text-[2.5rem] font-bold text-green-500"
+        >
           +
         </Button>
         <Button className="h-[3rem] w-[15rem] border-2 border-green-500 bg-transparent text-green-500">
           Analytics
         </Button>
       </div>
+      {showAddExpense && <AddExpenses setShowAddExpense={setShowAddExpense} />}
     </div>
   );
 };
