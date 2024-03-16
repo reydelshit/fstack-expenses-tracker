@@ -4,19 +4,58 @@ import express, {Express, Request, Response} from 'express';
 import cors from 'cors';
 
 const app: Express = express();
-const port = 8080 as number;
+const port = 8800 as number;
 
 
 
 const databaseConnection: mysql.Connection = mysql.createConnection({
-  host: 'monorail.proxy.rlwy.net',
+  host: 'localhost',
   user: 'root',
-  password: 'JJOWibbmAdKZjEYqenbwmJftfTvrDrZv',
-  database: 'railway',
+  password: '',
+  database: 'fstack-expenses',
 });
 
 app.use(express.json());
 app.use(cors());
+
+
+
+// users 
+
+// check user
+app.get("/users", (req, res) => {
+  // console.log(req.query)
+  const query = "SELECT * FROM users WHERE username = ? AND password = ?";
+  const username = req.query.username; 
+  const password = req.query.password;
+  const values = [username, password];
+
+  databaseConnection.query(query, values, (err, data) => {
+      if (err) return res.json(err);
+      return res.json(data); 
+  });
+});
+
+//register
+app.post("/users", (req, res) => {
+  const query = "INSERT INTO users (`fullname`, `username`, `password`, `created_at`) VALUES (?)"
+  const created_at = new Date()
+
+  const values = [
+      req.body.first_name + " " + req.body.last_name,
+      req.body.username,
+      req.body.password,
+      created_at
+  ]
+
+  databaseConnection.query(query, [values], (err, data) => {
+      if(err) return res.json(err)
+      return res.json({
+      ...data,
+      message: "succesfully added"
+      })
+  })
+})
 
 
 
