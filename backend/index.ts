@@ -18,9 +18,17 @@ const databaseConnection: mysql.Connection = mysql.createConnection({
 app.use(express.json());
 app.use(cors());
 
+databaseConnection.connect((err) => {
+ if(err) return console.log(err);
+
+ return console.log('Database connected');
+})
+
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
 
 
-// users 
 
 // check user
 app.get("/users", (req, res) => {
@@ -128,6 +136,3 @@ app.put(`/books/update/:id`, (req, res) => {
 })
 
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});

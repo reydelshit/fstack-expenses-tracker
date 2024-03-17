@@ -1,14 +1,17 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import useAuthenticate from '@/hooks/useAuthenticate';
 import axios from 'axios';
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 const SignIn = () => {
   const [credentials, setCredentials] = useState({
     username: '',
     password: '',
   });
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -17,15 +20,18 @@ const SignIn = () => {
   };
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-    // console.log(credentials);
     e.preventDefault();
-    await axios
-      .get('http://localhost:8800/users', {
-        params: credentials,
-      })
-      .then((res) => {
-        console.log(res.data);
+    const authenticate = await useAuthenticate(credentials);
+    console.log(authenticate, 'yoww');
+    if (authenticate.length === 0) {
+      setError('Invalid username or password');
+      return;
+    } else {
+      setError('');
+      navigate('/', {
+        replace: true,
       });
+    }
   };
 
   return (
@@ -66,6 +72,12 @@ const SignIn = () => {
                 Login
               </Button>
             </div>
+
+            {error.length > 0 && (
+              <div className="text-center text-[1.5rem] text-red-500">
+                {error}
+              </div>
+            )}
           </form>
         </div>
       </div>
