@@ -1,12 +1,16 @@
 import mysql from 'mysql';
 import express, {Express, Request, Response} from 'express';
-
+import jwt from 'jsonwebtoken';
 import cors from 'cors';
 
+import { User } from './types';
 const app: Express = express();
 const port = 8800 as number;
 
 
+interface UserDetails {
+
+}
 
 const databaseConnection: mysql.Connection = mysql.createConnection({
   host: 'localhost',
@@ -31,20 +35,29 @@ app.listen(port, () => {
 
 
 // check user
-app.get("/users", (req, res) => {
-  // console.log(req.query)
+app.post("/users", (req, res) => {
   const query = "SELECT * FROM users WHERE username = ? AND password = ?";
-  const username = req.query.username; 
-  const password = req.query.password;
-  const values = [username, password];
+  
+  const username = req.body.username as string; 
+  const password = req.body.password as string;
+  
+  const values = [username, password] ;
 
-  databaseConnection.query(query, values, (err, data) => {
+
+  databaseConnection.query(query, values, (err, data: User[]) => {
       if (err) return res.json(err);
-      return res.json(data); 
+      if (data.length === 0) return res.json({message: "Invalid username or password"});
+      const findId = data.find((user: User) => user.user_id === data[0].user_id )
+      const token = jwt.sign({username, user_id: findId?.user_id}, 'secret')
+      return (
+        res.json({
+          data, token
+        })
+      ); 
   });
 });
 
-//register
+//registerr
 app.post("/users", (req, res) => {
   const query = "INSERT INTO users (`fullname`, `username`, `password`, `created_at`) VALUES (?)"
   const created_at = new Date()

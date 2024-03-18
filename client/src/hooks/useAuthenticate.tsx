@@ -7,33 +7,63 @@ interface Credentials {
   password: string;
 }
 
+type AuthResponse = {
+  token: string;
+  data: User;
+};
+
 export default async function useAuthenticate({
   username,
   password,
 }: Credentials) {
-  try {
-    const response = await axios.get('http://localhost:8800/users', {
-      params: {
+  return new Promise<AuthResponse>((resolve, reject) => {
+    axios
+      .post('http://localhost:8800/users', {
         username,
         password,
-      },
-    });
+      })
+      .then((response) => {
+        if (response.data) {
+          const users: AuthResponse = response.data as AuthResponse;
+          const authToken = users.token;
+          useAuth.setState({ isAuthenticated: true });
+          useAuth.setState({ userDetails: users.data });
 
-    if (response.data && response.data.length > 0) {
-      const users: User[] = response.data as User[];
-      const authToken = users[0].user_id;
-      localStorage.setItem('authTokenExpenses', JSON.stringify(authToken));
-      useAuth.setState({ isAuthenticated: true });
-      useAuth.setState({ userDetails: users[0] });
-      return users;
-    } else {
-      console.error('No users found or error occurred.');
+          resolve(users);
+        } else {
+          console.error('No users found or error occurred.');
 
-      return [];
-    }
-  } catch (err) {
-    console.log(err);
-  }
-
-  return [];
+          resolve({ token: '', data: {} as User });
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        reject(err);
+      });
+  });
 }
+
+// try {
+//   const response = await axios.post('http://localhost:8800/users', {
+//     username,
+//     password,
+//   });
+
+//   if (response.data) {
+//     const users: AuthResponse = response.data as AuthResponse;
+//     const authToken = users.data.user_id;
+//     // // localStorage.setItem('authTokenExpenses', JSON.stringify(authToken));
+//     // useAuth.setState({ isAuthenticated: true });
+//     // useAuth.setState({ userDetails: users.data });
+
+//     return users;
+//   } else {
+//     console.error('No users found or error occurred.');
+
+//     return [];
+//   }
+// } catch (err) {
+//   console.log(err);
+// }
+
+// return [];

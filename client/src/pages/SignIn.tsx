@@ -20,17 +20,26 @@ const SignIn = () => {
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const authenticate = await useAuthenticate(credentials);
-    console.log(authenticate, 'yoww');
-    if (authenticate.length === 0) {
-      setError('Invalid username or password');
-      return;
-    } else {
-      setError('');
-      navigate('/', {
-        replace: true,
-      });
+
+    if (!credentials.password || !credentials.username) {
+      return setError('Please fill in all fields');
     }
+
+    const authenticate = await useAuthenticate({
+      username: credentials.username,
+      password: credentials.password,
+    });
+
+    if (!authenticate) {
+      return setError('Invalid username or password');
+    }
+
+    console.log(authenticate);
+
+    // setError('');
+    // navigate('/', {
+    //   replace: true,
+    // });
   };
 
   return (
