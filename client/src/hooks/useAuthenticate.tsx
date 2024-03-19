@@ -1,6 +1,6 @@
+import { User } from '@/entities/types';
 import axios from 'axios';
 import { useAuth } from './store';
-import { User } from '@/entities/types';
 
 interface Credentials {
   username: string;
@@ -18,7 +18,7 @@ export default async function useAuthenticate({
 }: Credentials) {
   return new Promise<AuthResponse>((resolve, reject) => {
     axios
-      .post('http://localhost:8800/users', {
+      .post('http://localhost:8800/users/login', {
         username,
         password,
       })
