@@ -1,11 +1,15 @@
-import express from 'express';
+import express, { Request } from 'express';
 import jwt from 'jsonwebtoken';
 import { databaseConnection } from '../DBconnection';
 import { User } from '../types';
+import { verifyToken } from '../middleware/verify';
 
 
 const router = express.Router();
 
+export interface CustomRequest extends Request {
+  user?: any
+}
 
 // check user
 router.post("/login", (req, res) => {
@@ -48,6 +52,33 @@ router.post("/register", (req, res) => {
         message: "succesfully added"
         })
     })
+  })
+
+
+
+  router.delete("/delete/:id", verifyToken, (req: Request, res) => {
+
+    // console.log(req.user.user_id, req.params.id)
+    if ((req as CustomRequest).user && parseInt((req as CustomRequest).user.user_id) === parseInt(req.params.id)) {
+      console.log("same");
+    } else {
+      console.log("not same");
+    }
+
+    // const query = "DELETE FROM users WHERE user_id = ?"
+    // const created_at = new Date()
+    
+    // const values = [
+    //     req.params.id
+    // ]
+  
+    // databaseConnection.query(query, [values], (err, data) => {
+    //     if(err) return res.json(err)
+    //     return res.json({
+    //     ...data,
+    //     message: "succesfully added"
+    //     })
+    // })
   })
   
 

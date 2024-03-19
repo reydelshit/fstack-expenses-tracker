@@ -1,3 +1,6 @@
+
+
+
 export type User = {
     user_id: number;
     username: string;
@@ -5,4 +8,3 @@ export type User = {
     created_at: string;
     fullname: string;
   };
-  
