@@ -4,82 +4,96 @@ import { databaseConnection } from '../DBconnection';
 import { User } from '../types';
 import { verifyToken } from '../middleware/verify';
 
-
 const router = express.Router();
 
 export interface CustomRequest extends Request {
-  user?: any
+  user?: any;
 }
 
+const generateToken = (user: User[], secretKey: string) => {
+  const { username } = user[0];
+  const findId = user.find((user: User) => user.user_id === user.user_id);
+  const token = jwt.sign({ username, user_id: findId?.user_id }, secretKey, {
+    expiresIn: '1h',
+  });
+
+  return token;
+};
+
 // check user
-router.post("/login", (req, res) => {
-    const query = "SELECT * FROM users WHERE username = ? AND password = ?";
-    
-    const username = req.body.username as string; 
-    const password = req.body.password as string;
-    
-    const values = [username, password];
-  
-    databaseConnection.query(query, values, (err, data: User[]) => {
-        if (err) return res.json(err);
-        if (data.length === 0) return res.json({message: "Invalid username or password"});
-        const findId = data.find((user: User) => user.user_id === data[0].user_id )
-        const token = jwt.sign({username, user_id: findId?.user_id}, 'secret')
-        return (
-          res.json({
-            data, token
-          })
-        ); 
+router.post('/login', (req, res) => {
+  const query = 'SELECT * FROM users WHERE username = ? AND password = ?';
+
+  const username = req.body.username as string;
+  const password = req.body.password as string;
+
+  const values = [username, password];
+
+  databaseConnection.query(query, values, (err, data: User[]) => {
+    if (err) return res.json(err);
+    if (data.length === 0)
+      return res.json({ message: 'Invalid username or password' });
+    // const findId = data.find((user: User) => user.user_id === data[0].user_id);
+    // const token = jwt.sign({ username, user_id: findId?.user_id }, 'secret', {
+    //   expiresIn: '1h',
+    // });
+    const token = generateToken(data, 'secret');
+    const refreshToken = generateToken(data, 'refreshTokenSecret');
+
+    return res.json({
+      data,
+      token,
     });
   });
-  
-  //registerr
-router.post("/register", (req, res) => {
-    const query = "INSERT INTO users (`fullname`, `username`, `password`, `created_at`) VALUES (?)"
-    const created_at = new Date()
-  
-    const values = [
-        req.body.first_name + " " + req.body.last_name,
-        req.body.username,
-        req.body.password,
-        created_at
-    ]
-  
-    databaseConnection.query(query, [values], (err, data) => {
-        if(err) return res.json(err)
-        return res.json({
-        ...data,
-        message: "succesfully added"
-        })
-    })
-  })
+});
 
+//registerr
+router.post('/register', (req, res) => {
+  const query =
+    'INSERT INTO users (`fullname`, `username`, `password`, `created_at`) VALUES (?)';
+  const created_at = new Date();
 
+  const values = [
+    req.body.first_name + ' ' + req.body.last_name,
+    req.body.username,
+    req.body.password,
+    created_at,
+  ];
 
-  router.delete("/delete/:id", verifyToken, (req: Request, res) => {
+  databaseConnection.query(query, [values], (err, data) => {
+    if (err) return res.json(err);
+    return res.json({
+      ...data,
+      message: 'succesfully added',
+    });
+  });
+});
 
-    // console.log(req.user.user_id, req.params.id)
-    if ((req as CustomRequest).user && parseInt((req as CustomRequest).user.user_id) === parseInt(req.params.id)) {
-      console.log("same");
-    } else {
-      console.log("not same");
-    }
+router.delete('/delete/:id', verifyToken, (req: Request, res) => {
+  // console.log(req.user.user_id, req.params.id)
+  if (
+    (req as CustomRequest).user &&
+    parseInt((req as CustomRequest).user.user_id) === parseInt(req.params.id)
+  ) {
+    console.log('same');
+  } else {
+    console.log('not same');
+  }
 
-    // const query = "DELETE FROM users WHERE user_id = ?"
-    // const created_at = new Date()
-    
-    // const values = [
-    //     req.params.id
-    // ]
-  
-    // databaseConnection.query(query, [values], (err, data) => {
-    //     if(err) return res.json(err)
-    //     return res.json({
-    //     ...data,
-    //     message: "succesfully added"
-    //     })
-    // })
-  })
-  
+  // const query = "DELETE FROM users WHERE user_id = ?"
+  // const created_at = new Date()
+
+  // const values = [
+  //     req.params.id
+  // ]
+
+  // databaseConnection.query(query, [values], (err, data) => {
+  //     if(err) return res.json(err)
+  //     return res.json({
+  //     ...data,
+  //     message: "succesfully added"
+  //     })
+  // })
+});
 
 export default router;
