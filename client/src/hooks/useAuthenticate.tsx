@@ -1,6 +1,8 @@
 import { User } from '@/entities/types';
 import axios from 'axios';
 import { useAuth } from './store';
+import Cookies from 'universal-cookie';
+import { JwtPayload, jwtDecode } from 'jwt-decode';
 
 interface Credentials {
   username: string;
@@ -25,9 +27,10 @@ export default async function useAuthenticate({
       .then((response) => {
         if (response.data) {
           const users: AuthResponse = response.data as AuthResponse;
-          const authToken = users.token;
+          // const authToken = users.token;
           useAuth.setState({ isAuthenticated: true });
           useAuth.setState({ userDetails: users.data });
+          console.log(users);
 
           resolve(users);
         } else {

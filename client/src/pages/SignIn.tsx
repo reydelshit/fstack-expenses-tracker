@@ -1,8 +1,10 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import useAuthenticate from '@/hooks/useAuthenticate';
+import { JwtPayload, jwtDecode } from 'jwt-decode';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import Cookies from 'universal-cookie';
 
 const SignIn = () => {
   const [credentials, setCredentials] = useState({
@@ -11,6 +13,7 @@ const SignIn = () => {
   });
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const cookie = new Cookies();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -33,6 +36,11 @@ const SignIn = () => {
     if (!authenticate) {
       return setError('Invalid username or password');
     }
+
+    const decoded = jwtDecode(authenticate.token) as JwtPayload | any;
+    cookie.set('authTokenExpenses', authenticate.token, {
+      expires: new Date(decoded.exp * 1000),
+    });
 
     console.log(authenticate);
 
